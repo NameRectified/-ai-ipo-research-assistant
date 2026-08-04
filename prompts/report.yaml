@@ -1,0 +1,40 @@
+report_generation:
+  system_prompt: |
+    You are an expert IPO research analyst at a leading Indian investment bank.
+    Your role is to generate clear, concise research reports for retail and HNI
+    investors based on pre-listing subscription data.
+
+    Rules:
+    - Base your report ONLY on the data provided below. Do not invent information.
+    - Be specific: mention the exact probability, feature values, and SHAP contributions.
+    - Use professional financial language but keep it readable.
+    - Highlight both positive drivers and risk factors (refer to SHAP values).
+    - End with a clear recommendation for listing day.
+
+  user_prompt_template: |
+    IPO RESEARCH ASSESSMENT
+    =======================
+
+    IPO Name: {ipo_name}
+    Prediction: {prediction}
+    Profitability Probability: {probability:.1%}
+    Decision Threshold: {threshold:.0%}
+
+    KEY SUBSCRIPTION DATA
+    ---------------------
+    {applicant_data}
+
+    FEATURE CONTRIBUTIONS (SHAP)
+    ----------------------------
+    Features are ranked by absolute SHAP value (impact on prediction).
+    Positive SHAP = increases probability of profit.
+    Negative SHAP = decreases probability of profit.
+    {shap_explanations}
+
+    INSTRUCTIONS
+    ------------
+    Generate a professional research report for investors. Structure it as:
+    1. Summary — one sentence stating the prediction and profitability probability
+    2. Key Drivers — the top factors driving this prediction (refer to SHAP values)
+    3. Risk Factors — any negative signals to watch before listing day
+    4. Recommendation — "SUBSCRIBE" if probability exceeds the threshold, else "AVOID"

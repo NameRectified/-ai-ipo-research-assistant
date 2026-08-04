@@ -1,4 +1,35 @@
-venv/
+# Environment
+.env
+
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# AI session memory (never committed)
+.progress/
+
+# AI engineering rules (not part of the project)
+.ai/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Model artifacts (large, generated)
+*.pkl
+!models/model.pkl
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Test
+.pytest_cache/

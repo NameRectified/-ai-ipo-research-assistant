@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI IPO Research Assistant</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    .profitable { color: var(--pico-color-green); font-weight: bold; }
+    .not-profitable { color: var(--pico-color-red); font-weight: bold; }
+    .positive { color: var(--pico-color-green); }
+    .negative { color: var(--pico-color-red); }
+    #report h1, #report h2, #report h3 { margin-top: 0.5em; margin-bottom: 0.25em; }
+    #report ul, #report ol { margin-bottom: 0.5em; }
+    #report li { margin-bottom: 0.25em; }
+  </style>
+</head>
+<body>
+  <main class="container" style="max-width: 800px; padding-top: 2rem;">
+    <hgroup>
+      <h1>AI IPO Research Assistant</h1>
+      <p>Enter IPO subscription details to receive a listing-day profitability assessment with SHAP explanations.</p>
+    </hgroup>
+
+    <form id="appForm">
+      <label>
+        IPO Name
+        <input type="text" name="ipo_name" value="ABC Infra" required>
+      </label>
+
+      <div class="grid">
+        <label>
+          Issue Size (crores)
+          <input type="number" name="issue_size" value="500" min="0" step="0.01" required>
+        </label>
+        <label>
+          Issue Price (INR)
+          <input type="number" name="issue_price" value="220" min="0" step="0.01" required>
+        </label>
+        <label>
+          Listing Date
+          <input type="date" name="listing_date" value="2022-08-26" required>
+        </label>
+      </div>
+
+      <div class="grid">
+        <label>
+          QIB Subscription (x)
+          <input type="number" name="subscription_qib" value="42.42" min="0" step="0.01" required>
+        </label>
+        <label>
+          HNI Subscription (x)
+          <input type="number" name="subscription_hni" value="7.13" min="0" step="0.01" required>
+        </label>
+        <label>
+          RII Subscription (x)
+          <input type="number" name="subscription_rii" value="2.84" min="0" step="0.01" required>
+        </label>
+      </div>
+
+      <button type="submit">Analyse IPO</button>
+    </form>
+
+    <div id="result" hidden>
+      <hr>
+      <article>
+        <header>
+          <h3>IPO Research Assessment</h3>
+        </header>
+        <p><strong>Prediction:</strong> <span id="predictionLabel"></span></p>
+        <p><strong>Profitability Probability:</strong> <span id="probability"></span></p>
+
+        <details>
+          <summary>Feature Contributions (SHAP)</summary>
+          <table>
+            <thead>
+              <tr><th>Feature</th><th>Value</th><th>SHAP</th><th>Impact</th></tr>
+            </thead>
+            <tbody id="shapTable"></tbody>
+          </table>
+          <small>Positive SHAP = increases chance of profit. Negative SHAP = decreases chance of profit.</small>
+        </details>
+
+        <details open>
+          <summary>Research Report</summary>
+          <div id="report"></div>
+        </details>
+      </article>
+    </div>
+
+    <div id="error" class="notice" hidden></div>
+
+    <hr>
+    <small>Model trained on <a href="https://github.com/AadiParkhi/IPO-Data-India-2010-2025" target="_blank">Indian IPO Data (2010–2025)</a></small>
+  </main>
+
+  <script>
+    document.getElementById("appForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const resultDiv = document.getElementById("result");
+      const errorDiv = document.getElementById("error");
+      resultDiv.hidden = true;
+      errorDiv.hidden = true;
+
+      const form = new FormData(e.target);
+      const body = {
+        ipo_name: form.get("ipo_name"),
+        issue_size: parseFloat(form.get("issue_size")),
+        subscription_qib: parseFloat(form.get("subscription_qib")),
+        subscription_hni: parseFloat(form.get("subscription_hni")),
+        subscription_rii: parseFloat(form.get("subscription_rii")),
+        issue_price: parseFloat(form.get("issue_price")),
+        listing_date: form.get("listing_date"),
+      };
+
+      try {
+        const res = await fetch("/api/v1/predict", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || "Request failed");
+        }
+
+        const data = await res.json();
+
+        const predictionLabel = document.getElementById("predictionLabel");
+        predictionLabel.textContent = data.prediction;
+        predictionLabel.className = data.prediction === "Profitable" ? "profitable" : "not-profitable";
+
+        document.getElementById("probability").textContent =
+          (data.profitability_probability * 100).toFixed(1) + "%";
+
+        const shapBody = document.getElementById("shapTable");
+        shapBody.innerHTML = "";
+        for (const e of data.shap_explanations) {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${e.feature_name}</td>
+            <td>${typeof e.feature_value === "number" ? e.feature_value.toFixed(4) : e.feature_value}</td>
+            <td class="${e.shap_value >= 0 ? "positive" : "negative"}">${e.shap_value >= 0 ? "+" : ""}${e.shap_value.toFixed(4)}</td>
+            <td>${e.impact.replace("_", " ")}</td>
+          `;
+          shapBody.appendChild(row);
+        }
+
+        document.getElementById("report").innerHTML =
+          marked.parse(data.research_report || "*(Report generation unavailable — no LLM configured)*");
+
+        resultDiv.hidden = false;
+      } catch (err) {
+        errorDiv.textContent = "Error: " + err.message;
+        errorDiv.hidden = false;
+      }
+    });
+  </script>
+</body>
+</html>
