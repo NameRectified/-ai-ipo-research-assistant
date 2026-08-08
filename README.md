@@ -10,12 +10,20 @@ IPO subscription data (QIB, HNI, RII) contains strong signals about market senti
 
 ---
 
+## Screenshots
+
+![IPO form with subscription inputs](assets/form.png)
+
+![Assessment result with prediction, SHAP explanations, and LLM report](assets/result.png)
+
+---
+
 ## Architecture
 
 ```
 ┌─────────────┐     ┌──────────────┐     ┌─────────────┐     ┌──────────────┐
 │   Frontend  │────▶│   FastAPI     │────▶│  XGBoost +  │────▶│  LLM Report  │
-│  (Pico CSS) │     │   /api/v1/    │     │    SHAP      │     │  (Groq/Gemini│
+│ (Custom UI) │     │   /api/v1/    │     │    SHAP      │     │  (Groq/Gemini│
 │             │     │   predict     │     │  Predictor   │     │  /OpenRouter) │
 └─────────────┘     └──────────────┘     └─────────────┘     └──────────────┘
 ```
@@ -36,7 +44,8 @@ IPO subscription data (QIB, HNI, RII) contains strong signals about market senti
 - **LLM Research Reports** — Auto-generated narrative reports via Groq/Gemini/OpenRouter
 - **Multi-provider Fallback** — LLM client automatically falls back to the next provider on failure
 - **REST API** — FastAPI with Pydantic validation, proper error codes, and OpenAPI docs
-- **Frontend** — Minimal Pico CSS form for interactive predictions
+- **OOD Input Warnings** — Flags inputs outside the model's training range
+- **Frontend** — Custom design-system UI for interactive predictions
 - **47 Tests** — Unit tests for schemas, predictor, pipeline, report generator, LLM client, and API endpoints
 - **Docker Support** — Production-ready container with docker-compose
 
@@ -49,7 +58,7 @@ IPO subscription data (QIB, HNI, RII) contains strong signals about market senti
 | Model | XGBoost, scikit-learn, SHAP |
 | Backend | FastAPI, Pydantic, Uvicorn |
 | LLM | Groq / Google Gemini / OpenRouter (with fallback) |
-| Frontend | HTML, Pico CSS, Marked.js |
+| Frontend | HTML, custom design system (CSS), Marked.js |
 | Testing | pytest |
 | Container | Docker, docker-compose |
 
@@ -61,8 +70,8 @@ IPO subscription data (QIB, HNI, RII) contains strong signals about market senti
 
 ```bash
 # Clone the repo
-git clone https://github.com/NameRectified/IPO-Prediction.git
-cd IPO-Prediction
+git clone https://github.com/NameRectified/-ai-ipo-research-assistant.git
+cd -ai-ipo-research-assistant
 
 # Create virtual environment
 python3 -m venv venv
@@ -79,7 +88,7 @@ cp .env.example .env
 uvicorn app.main:app --reload
 ```
 
-Open http://8000:8000 in your browser.
+Open http://localhost:8000 in your browser.
 
 ### Docker
 
@@ -119,7 +128,8 @@ ai-ipo-research-assistant/
 │   │   ├── report_generator.py  # LLM report generation from YAML prompts
 │   │   └── pipeline.py          # End-to-end orchestration
 │   ├── static/
-│   │   └── index.html           # Frontend
+│   │   ├── index.html           # Frontend
+│   │   └── design.css           # Design system styles
 │   └── main.py                  # FastAPI application
 ├── models/
 │   └── model.pkl                # Trained XGBoost model artifact
@@ -135,6 +145,7 @@ ai-ipo-research-assistant/
 │   └── test_api.py              # FastAPI endpoint tests
 ├── training/
 │   └── train.py                 # Model training pipeline
+├── assets/                      # Screenshots
 ├── Dockerfile
 ├── docker-compose.yml
 ├── requirements.txt
@@ -179,7 +190,8 @@ Submit IPO subscription data for a profitability assessment.
     }
   ],
   "research_report": "# IPO Research Assessment\n...",
-  "report_generated": true
+  "report_generated": true,
+  "input_warnings": []
 }
 ```
 
