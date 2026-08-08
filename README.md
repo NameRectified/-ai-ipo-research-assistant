@@ -72,8 +72,8 @@ IPO subscription data (QIB, HNI, RII) contains strong signals about market senti
 
 ```bash
 # Clone the repo
-git clone https://github.com/NameRectified/-ai-ipo-research-assistant.git
-cd -ai-ipo-research-assistant
+git clone https://github.com/NameRectified/ai-ipo-research-assistant.git
+cd ai-ipo-research-assistant
 
 # Create virtual environment
 python3 -m venv venv
