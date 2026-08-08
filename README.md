@@ -2,6 +2,8 @@
 
 Predicts Indian IPO listing-day profitability using XGBoost, explains predictions via SHAP, and generates research reports using LLMs.
 
+**Live demo:** [ipo-prediction.onrender.com](https://ipo-prediction.onrender.com)
+
 ---
 
 ## Why This Project?

@@ -58,29 +58,29 @@ class TestIPOApplication:
                 listing_date="2023-01-01",
             )
 
-    def test_zero_values_allowed(self) -> None:
-        app = IPOApplication(
-            ipo_name="Zero IPO",
-            issue_size=0,
-            subscription_qib=0,
-            subscription_hni=0,
-            subscription_rii=0,
-            issue_price=0,
-            listing_date="2023-01-01",
-        )
-        assert app.issue_size == 0
+    def test_zero_values_rejected(self) -> None:
+        with pytest.raises(ValidationError):
+            IPOApplication(
+                ipo_name="Zero IPO",
+                issue_size=0,
+                subscription_qib=0,
+                subscription_hni=0,
+                subscription_rii=0,
+                issue_price=0,
+                listing_date="2023-01-01",
+            )
 
-    def test_large_values(self) -> None:
-        app = IPOApplication(
-            ipo_name="Mega IPO",
-            issue_size=100000,
-            subscription_qib=500,
-            subscription_hni=300,
-            subscription_rii=100,
-            issue_price=5000,
-            listing_date="2023-12-31",
-        )
-        assert app.subscription_qib == 500
+    def test_out_of_range_values_rejected(self) -> None:
+        with pytest.raises(ValidationError):
+            IPOApplication(
+                ipo_name="Mega IPO",
+                issue_size=100000,
+                subscription_qib=500,
+                subscription_hni=300,
+                subscription_rii=100,
+                issue_price=5000,
+                listing_date="2023-12-31",
+            )
 
 
 class TestFeatureContribution:
