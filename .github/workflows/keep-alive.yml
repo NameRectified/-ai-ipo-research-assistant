@@ -10,4 +10,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Ping app health endpoint
-        run: curl -fsS --max-time 60 https://ipo-prediction.onrender.com/health
+        run: curl -fsS --max-time 180 https://ipo-prediction.onrender.com/health
