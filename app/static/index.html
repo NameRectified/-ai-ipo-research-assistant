@@ -4,72 +4,95 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>AI IPO Research Assistant</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Sora:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/design.css">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <style>
-    .profitable { color: var(--pico-color-green); font-weight: bold; }
-    .not-profitable { color: var(--pico-color-red); font-weight: bold; }
-    .positive { color: var(--pico-color-green); }
-    .negative { color: var(--pico-color-red); }
-    #report h1, #report h2, #report h3 { margin-top: 0.5em; margin-bottom: 0.25em; }
-    #report ul, #report ol { margin-bottom: 0.5em; }
-    #report li { margin-bottom: 0.25em; }
-  </style>
 </head>
 <body>
-  <main class="container" style="max-width: 800px; padding-top: 2rem;">
-    <hgroup>
+  <div class="page">
+    <header class="wordmark" aria-label="JBM">
+      <span class="wordmark-bar" aria-hidden="true"></span>
+      JBM
+    </header>
+
+    <section class="hero">
       <h1>AI IPO Research Assistant</h1>
       <p>Enter IPO subscription details to receive a listing-day profitability assessment with SHAP explanations.</p>
-    </hgroup>
+    </section>
 
     <form id="appForm">
-      <label>
-        IPO Name
-        <input type="text" name="ipo_name" value="ABC Infra" required>
-      </label>
+      <section class="card">
+        <h2 class="section-label">Model-Driven Fields</h2>
+        <p>These directly affect the prediction.</p>
 
-      <div class="grid">
-        <label>
-          Issue Size (crores)
-          <input type="number" name="issue_size" value="500" min="0" step="0.01" required>
-        </label>
-        <label>
-          Issue Price (INR)
-          <input type="number" name="issue_price" value="220" min="0" step="0.01" required>
-        </label>
-        <label>
-          Listing Date
-          <input type="date" name="listing_date" value="2022-08-26" required>
-        </label>
-      </div>
+        <div class="field-group">
+          <label class="field-label" for="issue_size">Issue Size (crores)</label>
+          <input type="number" id="issue_size" name="issue_size" value="500" min="23" max="27858.8" step="0.01" required>
+          <small>Min 23, Max 27858.8 (training range)</small>
+        </div>
 
-      <div class="grid">
-        <label>
-          QIB Subscription (x)
-          <input type="number" name="subscription_qib" value="42.42" min="0" step="0.01" required>
-        </label>
-        <label>
-          HNI Subscription (x)
-          <input type="number" name="subscription_hni" value="7.13" min="0" step="0.01" required>
-        </label>
-        <label>
-          RII Subscription (x)
-          <input type="number" name="subscription_rii" value="2.84" min="0" step="0.01" required>
-        </label>
-      </div>
+        <div class="form-grid">
+          <div class="field-group">
+            <label class="field-label" for="subscription_qib">QIB Subscription (x)</label>
+            <input type="number" id="subscription_qib" name="subscription_qib" value="42.42" min="0.01" max="331.6" step="0.01" required>
+            <small>Max 331.6 (training range)</small>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="subscription_hni">HNI Subscription (x)</label>
+            <input type="number" id="subscription_hni" name="subscription_hni" value="7.13" min="0.01" max="958.07" step="0.01" required>
+            <small>Max 958.07 (training range)</small>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="subscription_rii">RII Subscription (x)</label>
+            <input type="number" id="subscription_rii" name="subscription_rii" value="2.84" min="0.01" max="1000" step="0.01" required>
+            <small>Max 1000 (training range)</small>
+          </div>
+        </div>
+      </section>
 
-      <button type="submit">Analyse IPO</button>
+      <section class="card">
+        <h2 class="section-label">Informational Fields</h2>
+        <p>Used only in the narrative report, not the model.</p>
+
+        <div class="field-group">
+          <label class="field-label" for="ipo_name">IPO Name</label>
+          <input type="text" id="ipo_name" name="ipo_name" value="ABC Infra" required>
+        </div>
+
+        <div class="form-grid two">
+          <div class="field-group">
+            <label class="field-label" for="issue_price">Issue Price (INR)</label>
+            <input type="number" id="issue_price" name="issue_price" value="220" min="1" max="10000" step="0.01" required>
+            <small>Not used by the model; shown in the LLM report</small>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="listing_date">Listing Date</label>
+            <input type="date" id="listing_date" name="listing_date" value="2022-08-26" required>
+            <small>Not used by the model; shown in the LLM report</small>
+          </div>
+        </div>
+      </section>
+
+      <button type="submit" class="btn btn-primary btn-block">Analyse IPO</button>
     </form>
 
-    <div id="result" hidden>
-      <hr>
-      <article>
-        <header>
-          <h3>IPO Research Assessment</h3>
-        </header>
-        <p><strong>Prediction:</strong> <span id="predictionLabel"></span></p>
-        <p><strong>Profitability Probability:</strong> <span id="probability"></span></p>
+    <div id="warningBanner" class="warning-banner" hidden></div>
+
+    <div id="result" class="result" hidden>
+      <div class="card">
+        <h3>IPO Research Assessment</h3>
+
+        <div class="verdict">
+          <span class="label">Prediction</span>
+          <span id="predictionLabel" class="value"></span>
+        </div>
+
+        <div class="verdict">
+          <span class="label">Profitability Probability</span>
+          <span id="probability" class="value"></span>
+        </div>
 
         <details>
           <summary>Feature Contributions (SHAP)</summary>
@@ -86,22 +109,33 @@
           <summary>Research Report</summary>
           <div id="report"></div>
         </details>
-      </article>
+      </div>
     </div>
 
     <div id="error" class="notice" hidden></div>
 
-    <hr>
-    <small>Model trained on <a href="https://github.com/AadiParkhi/IPO-Data-India-2010-2025" target="_blank">Indian IPO Data (2010–2025)</a></small>
-  </main>
+    <footer class="site-footer">
+      Model trained on
+      <a href="https://github.com/AadiParkhi/IPO-Data-India-2010-2025" target="_blank" rel="noopener">
+        Indian IPO Data (2010 to 2025)
+        <svg class="arrow-icon" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M3.5 8.5L8.5 3.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M4.5 3.5H8.5V7.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+    </footer>
+  </div>
 
   <script>
     document.getElementById("appForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const resultDiv = document.getElementById("result");
       const errorDiv = document.getElementById("error");
+      const warningBanner = document.getElementById("warningBanner");
       resultDiv.hidden = true;
       errorDiv.hidden = true;
+      warningBanner.hidden = true;
+      warningBanner.textContent = "";
 
       const form = new FormData(e.target);
       const body = {
@@ -130,10 +164,16 @@
 
         const predictionLabel = document.getElementById("predictionLabel");
         predictionLabel.textContent = data.prediction;
-        predictionLabel.className = data.prediction === "Profitable" ? "profitable" : "not-profitable";
+        predictionLabel.className = "value " + (data.prediction === "Profitable" ? "profitable" : "not-profitable");
 
         document.getElementById("probability").textContent =
           (data.profitability_probability * 100).toFixed(1) + "%";
+
+        // Show OOD warnings if any
+        if (data.input_warnings && data.input_warnings.length > 0) {
+          warningBanner.innerHTML = "<strong>Input Warning:</strong> " + data.input_warnings.join("<br>");
+          warningBanner.hidden = false;
+        }
 
         const shapBody = document.getElementById("shapTable");
         shapBody.innerHTML = "";
@@ -149,7 +189,7 @@
         }
 
         document.getElementById("report").innerHTML =
-          marked.parse(data.research_report || "*(Report generation unavailable — no LLM configured)*");
+          marked.parse(data.research_report || "*(Report generation unavailable, no LLM configured)*");
 
         resultDiv.hidden = false;
       } catch (err) {
