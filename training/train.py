@@ -264,12 +264,22 @@ def main() -> None:
     for k, v in importance.items():
         logger.info(f"  {k}: {v:.4f}")
 
+    # Compute feature ranges for out-of-distribution detection
+    feature_ranges = {
+        feat: {"min": float(X[feat].min()), "max": float(X[feat].max())}
+        for feat in SELECTED_FEATURES
+    }
+    logger.info("Feature ranges for OOD detection:")
+    for feat, rng in feature_ranges.items():
+        logger.info(f"  {feat}: [{rng['min']:.4f}, {rng['max']:.4f}]")
+
     os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
     joblib.dump(
         {
             "model": final_model,
             "features": SELECTED_FEATURES,
             "threshold": best_threshold,
+            "feature_ranges": feature_ranges,
         },
         MODEL_PATH,
     )

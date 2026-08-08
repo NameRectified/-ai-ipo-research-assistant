@@ -18,11 +18,14 @@ class Predictor:
         self._model: XGBClassifier = saved["model"]
         self._features: list[str] = saved["features"]
         self._threshold: float = saved["threshold"]
+        self._feature_ranges: dict = saved.get("feature_ranges", {})
         self._explainer = shap.TreeExplainer(self._model)
         logger.info(
             f"Loaded model with {len(self._features)} features, "
             f"threshold={self._threshold:.2f}"
         )
+        if self._feature_ranges:
+            logger.info("Feature ranges loaded for OOD detection")
 
     @property
     def features(self) -> list[str]:
@@ -31,6 +34,18 @@ class Predictor:
     @property
     def threshold(self) -> float:
         return self._threshold
+
+    def _check_out_of_distribution(self, row: dict) -> list[str]:
+        """Check if any input features are outside training distribution ranges."""
+        warnings = []
+        for feat, rng in self._feature_ranges.items():
+            if feat in row:
+                val = row[feat]
+                if val < rng["min"] or val > rng["max"]:
+                    warnings.append(
+                        f"{feat}={val:.4f} is outside training range [{rng['min']:.4f}, {rng['max']:.4f}]"
+                    )
+        return warnings
 
     def predict(self, application: IPOApplication) -> IPOResearchAssessment:
         total_sub = (
@@ -48,6 +63,9 @@ class Predictor:
             "RII_pct": application.subscription_rii / (total_sub + eps),
             "Issue_Size_crores": application.issue_size,
         }
+
+        # Check for out-of-distribution inputs
+        ood_warnings = self._check_out_of_distribution(row)
 
         features_df = pd.DataFrame([row])[self._features]
 
@@ -78,4 +96,5 @@ class Predictor:
             profitability_probability=round(proba, 4),
             features_used=self._features,
             shap_explanations=explanations,
+            input_warnings=ood_warnings,
         )
