@@ -31,11 +31,24 @@ class IPOApplication(BaseModel):
 
 
 class FeatureContribution(BaseModel):
-    feature_name: str = Field(..., description="Feature name")
+    feature_name: str = Field(..., description="Feature name (e.g. HNI_pct)")
+    feature_label: str = Field(
+        ..., description="Human-readable feature name", example="HNI Subscription"
+    )
     feature_value: float = Field(..., description="Actual value provided")
+    value_label: str = Field(
+        ...,
+        description="Human-readable interpretation of the value",
+        example="7.13x",
+    )
     shap_value: float = Field(..., description="SHAP contribution value")
     impact: str = Field(
         ..., description="increases_profitability or decreases_profitability"
+    )
+    magnitude: str = Field(
+        ...,
+        description="Plain-language strength and direction",
+        example="Strongly increases profit",
     )
 
 
@@ -44,6 +57,15 @@ class IPOResearchAssessment(BaseModel):
     prediction: str = Field(..., description="Profitable or Not Profitable")
     profitability_probability: float = Field(
         ..., ge=0, le=1, description="Predicted probability of profit"
+    )
+    baseline_profitability_rate: float = Field(
+        ...,
+        ge=0,
+        le=1,
+        description=(
+            "Average profitability rate in the training population that SHAP "
+            "explanations are measured against"
+        ),
     )
     features_used: list[str] = Field(
         ..., description="Feature names used by the model"

@@ -280,10 +280,14 @@ def main() -> None:
             "features": SELECTED_FEATURES,
             "threshold": best_threshold,
             "feature_ranges": feature_ranges,
+            "baseline_profitability_rate": float(y.mean()),
         },
         MODEL_PATH,
     )
-    logger.success(f"Model saved to {MODEL_PATH}")
+    logger.success(
+        f"Model saved to {MODEL_PATH} "
+        f"(baseline_profitability_rate={y.mean():.4f})"
+    )
 
 
 if __name__ == "__main__":

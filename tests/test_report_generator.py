@@ -43,29 +43,60 @@ class TestFormatSHAP:
         explanations = [
             FeatureContribution(
                 feature_name="QIB",
+                feature_label="QIB Subscription",
                 feature_value=42.42,
+                value_label="42.42x",
                 shap_value=0.15,
                 impact="increases_profitability",
+                magnitude="Moderately increases profit",
             )
         ]
         result = _format_shap(explanations)
-        assert "QIB" in result
-        assert "42.42" in result
-        assert "+0.15" in result
-        assert "increases_profitability" in result
+        assert "QIB Subscription" in result
+        assert "42.42x" in result
+        assert "+0.1500" in result
+        assert "increases profit" in result
 
     def test_format_negative_shap(self) -> None:
         explanations = [
             FeatureContribution(
                 feature_name="RII_pct",
+                feature_label="RII Share of Subscription",
                 feature_value=0.2,
+                value_label="20.0%",
                 shap_value=-0.08,
                 impact="decreases_profitability",
+                magnitude="Moderately decreases profit",
             )
         ]
         result = _format_shap(explanations)
-        assert "-0.08" in result
-        assert "+" not in result.split("SHAP=")[1].split(" ")[0]
+        assert "-0.0800" in result
+        assert "decreases profit" in result
+
+    def test_format_uses_labels_not_raw_codes(self) -> None:
+        explanations = [
+            FeatureContribution(
+                feature_name="HNI_pct",
+                feature_label="HNI Share of Subscription",
+                feature_value=0.3,
+                value_label="30.0%",
+                shap_value=0.12,
+                impact="increases_profitability",
+                magnitude="Moderately increases profit",
+            ),
+            FeatureContribution(
+                feature_name="Issue_Size_crores",
+                feature_label="Issue Size",
+                feature_value=500,
+                value_label="500 crores",
+                shap_value=-0.05,
+                impact="decreases_profitability",
+                magnitude="Moderately decreases profit",
+            ),
+        ]
+        result = _format_shap(explanations)
+        for code in ["HNI_pct", "Issue_Size_crores", "Total_Sub", "RII_pct"]:
+            assert code not in result
 
 
 class TestReportGenerator:
@@ -79,13 +110,17 @@ class TestReportGenerator:
             ipo_name="Test",
             prediction="Profitable",
             profitability_probability=0.85,
+            baseline_profitability_rate=0.69,
             features_used=["QIB"],
             shap_explanations=[
                 FeatureContribution(
                     feature_name="QIB",
+                    feature_label="QIB Subscription",
                     feature_value=42.42,
+                    value_label="42.42x",
                     shap_value=0.15,
                     impact="increases_profitability",
+                    magnitude="Moderately increases profit",
                 )
             ],
         )
@@ -103,6 +138,7 @@ class TestReportGenerator:
             ipo_name="Test IPO",
             prediction="Profitable",
             profitability_probability=0.85,
+            baseline_profitability_rate=0.69,
             features_used=["QIB"],
             shap_explanations=[],
         )
@@ -125,6 +161,7 @@ class TestReportGenerator:
             ipo_name="Test",
             prediction="Profitable",
             profitability_probability=0.85,
+            baseline_profitability_rate=0.69,
             features_used=["QIB"],
             shap_explanations=[],
         )

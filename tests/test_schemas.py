@@ -89,19 +89,28 @@ class TestFeatureContribution:
     def test_valid_contribution(self) -> None:
         fc = FeatureContribution(
             feature_name="QIB",
+            feature_label="QIB Subscription",
             feature_value=42.42,
+            value_label="42.42x",
             shap_value=0.15,
             impact="increases_profitability",
+            magnitude="Moderately increases profit",
         )
         assert fc.feature_name == "QIB"
+        assert fc.feature_label == "QIB Subscription"
+        assert fc.value_label == "42.42x"
         assert fc.impact == "increases_profitability"
+        assert fc.magnitude == "Moderately increases profit"
 
     def test_negative_shap(self) -> None:
         fc = FeatureContribution(
             feature_name="RII_pct",
+            feature_label="RII Share of Subscription",
             feature_value=0.2,
+            value_label="20.0%",
             shap_value=-0.08,
             impact="decreases_profitability",
+            magnitude="Moderately decreases profit",
         )
         assert fc.shap_value < 0
         assert fc.impact == "decreases_profitability"
@@ -115,11 +124,13 @@ class TestIPOResearchAssessment:
             ipo_name="Test",
             prediction="Profitable",
             profitability_probability=0.85,
+            baseline_profitability_rate=0.69,
             features_used=["QIB"],
             shap_explanations=[],
         )
         assert assessment.research_report == ""
         assert assessment.report_generated is False
+        assert assessment.baseline_profitability_rate == 0.69
 
     def test_probability_bounds(self) -> None:
         with pytest.raises(ValidationError):
@@ -127,6 +138,7 @@ class TestIPOResearchAssessment:
                 ipo_name="Test",
                 prediction="Profitable",
                 profitability_probability=1.5,
+                baseline_profitability_rate=0.69,
                 features_used=["QIB"],
                 shap_explanations=[],
             )
@@ -137,6 +149,7 @@ class TestIPOResearchAssessment:
                 ipo_name="Test",
                 prediction="Profitable",
                 profitability_probability=-0.1,
+                baseline_profitability_rate=0.69,
                 features_used=["QIB"],
                 shap_explanations=[],
             )

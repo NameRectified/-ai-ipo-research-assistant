@@ -26,6 +26,7 @@ class TestPredictor:
         assert result.ipo_name == "Test IPO"
         assert result.prediction in ("Profitable", "Not Profitable")
         assert 0 <= result.profitability_probability <= 1
+        assert result.baseline_profitability_rate == 0.67
         assert len(result.shap_explanations) == 6
 
     def test_predict_engineers_total_sub(
@@ -101,3 +102,43 @@ class TestPredictor:
                 assert e.impact == "increases_profitability"
             else:
                 assert e.impact == "decreases_profitability"
+
+    def test_shap_explanations_are_human_readable(
+        self, mock_model_artifact: str, sample_ipo: IPOApplication
+    ) -> None:
+        predictor = Predictor(mock_model_artifact)
+        result = predictor.predict(sample_ipo)
+        by_name = {e.feature_name: e for e in result.shap_explanations}
+
+        assert by_name["QIB"].feature_label == "QIB Subscription"
+        assert by_name["QIB"].value_label.endswith("x")
+        assert by_name["HNI_pct"].feature_label == "HNI Share of Subscription"
+        assert by_name["HNI_pct"].value_label.endswith("%")
+        assert by_name["Issue_Size_crores"].feature_label == "Issue Size"
+        assert "crores" in by_name["Issue_Size_crores"].value_label
+
+        for e in result.shap_explanations:
+            assert e.feature_label
+            assert e.value_label
+            assert "profit" in e.magnitude
+
+    def test_ood_warnings_use_human_labels(
+        self, mock_model_artifact: str
+    ) -> None:
+        predictor = Predictor(mock_model_artifact)
+        result = predictor.predict(
+            IPOApplication(
+                ipo_name="OOD Test",
+                issue_size=500,
+                subscription_qib=331.6,
+                subscription_hni=7,
+                subscription_rii=3,
+                issue_price=200,
+                listing_date="2023-01-01",
+            )
+        )
+        assert len(result.input_warnings) == 2
+        assert "Total Subscription (341.60x)" in result.input_warnings[0]
+        assert "QIB Subscription (331.60x)" in result.input_warnings[1]
+        for code in ["QIB=", "Issue_Size_crores=", "HNI_pct"]:
+            assert all(code not in w for w in result.input_warnings)

@@ -96,13 +96,19 @@
 
         <details>
           <summary>Feature Contributions (SHAP)</summary>
+          <p class="shap-explainer">
+            Each factor pushes the profitability outlook up or down from the
+            <strong><span id="baselineRate"></span> average profitability rate</strong>.
+            The strongest factors are listed first.
+            <span class="positive">Green (positive SHAP) = increases chance of profit</span>,
+            <span class="negative">red (negative SHAP) = decreases chance of profit</span>.
+          </p>
           <table>
             <thead>
-              <tr><th>Feature</th><th>Value</th><th>SHAP</th><th>Impact</th></tr>
+              <tr><th>Factor</th><th>Value</th><th>SHAP Value</th><th>Effect on Profit</th></tr>
             </thead>
             <tbody id="shapTable"></tbody>
           </table>
-          <small>Positive SHAP = increases chance of profit. Negative SHAP = decreases chance of profit.</small>
         </details>
 
         <details open>
@@ -175,15 +181,30 @@
           warningBanner.hidden = false;
         }
 
+        document.getElementById("baselineRate").textContent =
+          (data.baseline_profitability_rate * 100).toFixed(1) + "%";
+
         const shapBody = document.getElementById("shapTable");
         shapBody.innerHTML = "";
+        const maxAbs = Math.max(...data.shap_explanations.map(e => Math.abs(e.shap_value)), 0.0001);
         for (const e of data.shap_explanations) {
           const row = document.createElement("tr");
+          const effectClass = e.shap_value >= 0 ? "positive" : "negative";
+          const absShap = Math.abs(e.shap_value);
+          const barPct = Math.max((absShap / maxAbs) * 100, 4);
+          const barSide = e.shap_value >= 0 ? "left" : "right";
+          const shapCell = `
+            <td class="${effectClass}">
+              <span class="shap-tooltip" tabindex="0" data-tip="Log-odds units: how much this factor pushed the prediction">${e.shap_value >= 0 ? "+" : ""}${e.shap_value.toFixed(4)}</span>
+              <div class="shap-bar-track" aria-hidden="true">
+                <span class="shap-bar-fill ${barSide} ${effectClass}" style="width:${barPct}%"></span>
+              </div>
+            </td>`;
           row.innerHTML = `
-            <td>${e.feature_name}</td>
-            <td>${typeof e.feature_value === "number" ? e.feature_value.toFixed(4) : e.feature_value}</td>
-            <td class="${e.shap_value >= 0 ? "positive" : "negative"}">${e.shap_value >= 0 ? "+" : ""}${e.shap_value.toFixed(4)}</td>
-            <td>${e.impact.replace("_", " ")}</td>
+            <td>${e.feature_label}</td>
+            <td>${e.value_label}</td>
+            ${shapCell}
+            <td class="${effectClass}">${e.magnitude}</td>
           `;
           shapBody.appendChild(row);
         }

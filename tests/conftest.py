@@ -54,7 +54,20 @@ def _build_mock_model() -> XGBClassifier:
 def mock_model_artifact(tmp_path: Any) -> str:
     """Save a mock model artifact to a temp file and return the path."""
     model = _build_mock_model()
-    artifact = {"model": model, "features": FEATURES, "threshold": THRESHOLD}
+    artifact = {
+        "model": model,
+        "features": FEATURES,
+        "threshold": THRESHOLD,
+        "baseline_profitability_rate": 0.67,
+        "feature_ranges": {
+            "Total_Sub": {"min": 0.0, "max": 300.0},
+            "QIB": {"min": 0.0, "max": 150.0},
+            "HNI": {"min": 0.0, "max": 100.0},
+            "HNI_pct": {"min": 0.0, "max": 0.9},
+            "RII_pct": {"min": 0.0, "max": 0.99},
+            "Issue_Size_crores": {"min": 23.0, "max": 27858.8},
+        },
+    }
     path = tmp_path / "model.pkl"
     joblib.dump(artifact, path)
     return str(path)

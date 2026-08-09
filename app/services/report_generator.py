@@ -40,10 +40,10 @@ def _format_shap(explanations: list[FeatureContribution]) -> str:
     """Format SHAP explanations as a readable table for the LLM."""
     lines = []
     for e in explanations:
-        direction = "+" if e.shap_value >= 0 else ""
+        sign = "+" if e.shap_value >= 0 else ""
         lines.append(
-            f"  {e.feature_name}: value={e.feature_value}, "
-            f"SHAP={direction}{e.shap_value:.4f} ({e.impact})"
+            f"  {e.feature_label} ({e.value_label}): "
+            f"SHAP {sign}{e.shap_value:.4f} ({e.magnitude})"
         )
     return "\n".join(lines)
 

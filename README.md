@@ -125,6 +125,7 @@ ai-ipo-research-assistant/
 │   ├── config/
 │   │   └── settings.py          # Environment-based configuration
 │   ├── services/
+│   │   ├── feature_meta.py       # Human-readable feature labels and formatters
 │   │   ├── predictor.py         # Model loading, prediction, SHAP explanations
 │   │   ├── llm_client.py        # Multi-provider LLM client with fallback
 │   │   ├── report_generator.py  # LLM report generation from YAML prompts
@@ -182,13 +183,17 @@ Submit IPO subscription data for a profitability assessment.
   "ipo_name": "ABC Infra",
   "prediction": "Profitable",
   "profitability_probability": 0.87,
+  "baseline_profitability_rate": 0.6941,
   "features_used": ["Total_Sub", "QIB", "HNI", "HNI_pct", "RII_pct", "Issue_Size_crores"],
   "shap_explanations": [
     {
       "feature_name": "Total_Sub",
+      "feature_label": "Total Subscription",
       "feature_value": 52.39,
+      "value_label": "52.39x",
       "shap_value": 0.1523,
-      "impact": "increases_profitability"
+      "impact": "increases_profitability",
+      "magnitude": "Moderately increases profit"
     }
   ],
   "research_report": "# IPO Research Assessment\n...",

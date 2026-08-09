@@ -10,6 +10,9 @@ report_generation:
     - Use professional financial language but keep it readable.
     - Highlight both positive drivers and risk factors (refer to SHAP values).
     - End with a clear recommendation for listing day.
+    - Use only the plain-language factor names and values provided below.
+      Never output internal codes such as Total_Sub, HNI_pct, RII_pct,
+      Issue_Size_crores, QIB, or HNI.
 
   user_prompt_template: |
     IPO RESEARCH ASSESSMENT
