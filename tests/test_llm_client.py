@@ -54,7 +54,7 @@ class TestLLMClientInit:
         mock_settings.groq_api_key = "groq-key"
         mock_settings.groq_model = "llama-3.3-70b-versatile"
         mock_settings.gemini_api_key = "gemini-key"
-        mock_settings.gemini_model = "gemini-1.5-flash"
+        mock_settings.gemini_model = "gemini-2.5-flash"
         mock_settings.openrouter_api_key = ""
         mock_settings.openrouter_models = ""
         client = LLMClient()
@@ -89,7 +89,7 @@ class TestLLMClientGenerate:
         mock_settings.groq_api_key = "groq-key"
         mock_settings.groq_model = "llama-3.3-70b-versatile"
         mock_settings.gemini_api_key = "gemini-key"
-        mock_settings.gemini_model = "gemini-1.5-flash"
+        mock_settings.gemini_model = "gemini-2.5-flash"
         mock_settings.openrouter_api_key = ""
         mock_settings.openrouter_models = ""
         mock_post.side_effect = [
@@ -110,7 +110,7 @@ class TestLLMClientGenerate:
         mock_settings.groq_api_key = "groq-key"
         mock_settings.groq_model = "llama-3.3-70b-versatile"
         mock_settings.gemini_api_key = "gemini-key"
-        mock_settings.gemini_model = "gemini-1.5-flash"
+        mock_settings.gemini_model = "gemini-2.5-flash"
         mock_settings.openrouter_api_key = ""
         mock_settings.openrouter_models = ""
         mock_post.side_effect = [
